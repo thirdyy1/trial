@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Product Calcu</title>
+    <title>Hi Yanna</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -142,14 +142,9 @@
     <h2>hi Yanna my babyy</h2>
 
     <!-- Inputs -->
-    <label>Product Name:</label>
-    <input type="text" id="productName">
-
-    <label>Quantity:</label>
-    <input type="number" id="quantity" step="1" onkeydown="blockInvalidKeys(event)" oninput="removeDecimals(this)">
-
-    <label>Price per Item (Php):</label>
-    <input type="number" id="price" onkeydown="blockInvalidKeys(event)">
+    <input type="text" id="productName" placeholder="Enter product name">
+    <input type="number" id="quantity" step="1" onkeydown="blockInvalidKeys(event)" oninput="removeDecimals(this)" placeholder="Enter quantity">
+    <input type="number" id="price" onkeydown="blockInvalidKeys(event)" placeholder="Enter price per item">
 
     <!-- Buttons -->
     <button onclick="calculate()">Calculate</button>
@@ -388,5 +383,6 @@ window.addEventListener("keydown", function(event) {
 
 </body>
 </html>
+
 
 
