@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 400px;
+            background: white;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input.error {
+            border: 2px solid red;
+            background: #ffe5e5;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .secondary-btn {
+            background: #28a745;
+        }
+
+        .secondary-btn:hover {
+            background: #1e7e34;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            width: auto;
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            background: #a71d2a;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 12% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+            animation: slideDown 0.3s ease;
+        }
+
+        .close {
+            float: right;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #fafafa;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 6px;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideDown {
+            from {transform: translateY(-30px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Product Calculator</h2>
+
+    <!-- Inputs -->
+    <label>Product Name:</label>
+    <input type="text" id="productName">
+
+    <label>Quantity:</label>
+    <input type="number" id="quantity" step="1" onkeydown="blockInvalidKeys(event)" oninput="removeDecimals(this)">
+
+    <label>Price per Item (Php):</label>
+    <input type="number" id="price" onkeydown="blockInvalidKeys(event)">
+
+    <!-- Buttons -->
+    <button onclick="calculate()">Calculate</button>
+    <button class="secondary-btn" onclick="openHistory()">View History</button>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message"></div>
+</div>
+
+<!-- Total Modal -->
+<div id="totalModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeTotal()">×</span>
+        <h3>Calculation Result</h3>
+        <h2 id="totalText" style="margin:15px 0;"></h2>
+        <button class="secondary-btn" onclick="gotoHistory()">View History</button>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeHistory()">×</span>
+        <h3>Calculation History</h3>
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4">No calculations yet.</td></tr>
+            </tbody>
+        </table>
+        <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+    </div>
+</div>
+
+<script>
+// Load history on page load
+window.onload = function() {
+    loadHistory();
+}
+
+// Block invalid keys in number inputs (block e, E, +, -)
+function blockInvalidKeys(event) {
+    if (["e", "E", "+", "-"].includes(event.key)) {
+        event.preventDefault();
+    }
+}
+
+// Remove decimals from quantity
+function removeDecimals(input) {
+    if (input.value.includes(".")) {
+        input.value = input.value.split(".")[0];
+    }
+}
+
+// Show error message
+function showError(message) {
+    document.getElementById("errorMessage").innerText = message;
+}
+
+// Clear error message
+function clearError() {
+    document.getElementById("errorMessage").innerText = "";
+}
+
+// Calculate total and show modal
+function calculate() {
+    let name = document.getElementById("productName");
+    let qty = document.getElementById("quantity");
+    let price = document.getElementById("price");
+
+    // Reset error styles
+    name.classList.remove("error");
+    qty.classList.remove("error");
+    price.classList.remove("error");
+    clearError();
+
+    // Validation
+    if (name.value.trim() === "") {
+        name.classList.add("error");
+        showError("Please enter a product name.");
+        return;
+    }
+    if (qty.value <= 0) {
+        qty.classList.add("error");
+        showError("Quantity must be a whole number greater than 0.");
+        return;
+    }
+    if (price.value <= 0) {
+        price.classList.add("error");
+        showError("Price must be greater than 0.");
+        return;
+    }
+
+    // Compute total
+    let total = qty.value * price.value;
+
+    // Show total only
+    document.getElementById("totalText").innerText = "Php " + total.toFixed(2);
+    document.getElementById("totalModal").style.display = "block";
+
+    // Save to history
+    addToHistory(name.value, qty.value, price.value, total);
+
+    // Clear inputs
+    name.value = "";
+    qty.value = "";
+    price.value = "";
+}
+
+// Add row to history table and save
+function addToHistory(name, qty, price, total) {
+    let tableBody = document.querySelector("#historyTable tbody");
+
+    if (tableBody.rows.length === 1 && tableBody.rows[0].cells.length === 1) {
+        tableBody.innerHTML = "";
+    }
+
+    let row = tableBody.insertRow();
+    row.insertCell(0).innerText = name;
+    row.insertCell(1).innerText = qty;
+    row.insertCell(2).innerText = parseFloat(price).toFixed(2);
+    row.insertCell(3).innerText = total.toFixed(2);
+
+    saveHistory();
+}
+
+// Save history to localStorage
+function saveHistory() {
+    let tableBody = document.querySelector("#historyTable tbody");
+    let history = [];
+
+    for (let i = 0; i < tableBody.rows.length; i++) {
+        let cells = tableBody.rows[i].cells;
+        history.push({
+            name: cells[0].innerText,
+            qty: cells[1].innerText,
+            price: cells[2].innerText,
+            total: cells[3].innerText
+        });
+    }
+
+    localStorage.setItem("history", JSON.stringify(history));
+}
+
+// Load history from localStorage
+function loadHistory() {
+    let history = localStorage.getItem("history");
+    if (!history) return;
+
+    let tableBody = document.querySelector("#historyTable tbody");
+    tableBody.innerHTML = "";
+
+    JSON.parse(history).forEach(item => {
+        let row = tableBody.insertRow();
+        row.insertCell(0).innerText = item.name;
+        row.insertCell(1).innerText = item.qty;
+        row.insertCell(2).innerText = item.price;
+        row.insertCell(3).innerText = item.total;
+    });
+}
+
+// Open/close modals
+function openHistory() {
+    document.getElementById("historyModal").style.display = "block";
+}
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+function closeTotal() {
+    document.getElementById("totalModal").style.display = "none";
+}
+
+// View history directly from total modal
+function gotoHistory() {
+    closeTotal();
+    openHistory();
+}
+
+// Clear history
+function clearHistory() {
+    document.querySelector("#historyTable tbody").innerHTML =
+        "<tr><td colspan='4'>No calculations yet.</td></tr>";
+    localStorage.removeItem("history");
+}
+
+// Show/Hide modals
+function openHistory() {
+    document.getElementById("historyModal").style.display = "block";
+}
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+function closeTotal() {
+    document.getElementById("totalModal").style.display = "none";
+}
+function gotoHistory() {
+    closeTotal();
+    openHistory();
+}
+
+// Clear history
+function clearHistory() {
+    document.querySelector("#historyTable tbody").innerHTML =
+        "<tr><td colspan='4'>No calculations yet.</td></tr>";
+    localStorage.removeItem("history");
+}
+
+// Close when clicking outside the modal box
+window.addEventListener("click", function(event) {
+    let totalModal = document.getElementById("totalModal");
+    let historyModal = document.getElementById("historyModal");
+
+    if (event.target === totalModal) {
+        closeTotal();
+    }
+    if (event.target === historyModal) {
+        closeHistory();
+    }
+});
+
+// Close when pressing ESC key
+window.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+        closeTotal();
+        closeHistory();
+    }
+});
+</script>
+
+</body>
+</html>
