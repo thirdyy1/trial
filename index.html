@@ -73,7 +73,6 @@
             background: #a71d2a;
         }
 
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -124,7 +123,6 @@
             margin-top: 10px;
         }
 
-        /* Animations */
         @keyframes fadeIn {
             from {opacity: 0;}
             to {opacity: 1;}
@@ -141,23 +139,21 @@
 <div class="container">
     <h2>hi Yanna my babyy</h2>
 
-    <!-- Inputs -->
-     <label>Product Name:</label>
+    <label>Product Name:</label>
     <input type="text" id="productName" placeholder="Enter product name">
+
     <label>Quantity:</label>
     <input type="number" id="quantity" step="1" onkeydown="blockInvalidKeys(event)" oninput="removeDecimals(this)" placeholder="Enter quantity">
-    <label>Price per Item:</label>
+
+    <label>Price per Item (Php):</label>
     <input type="number" id="price" onkeydown="blockInvalidKeys(event)" placeholder="Enter price per item">
 
-    <!-- Buttons -->
     <button onclick="calculate()">Calculate</button>
     <button class="secondary-btn" onclick="openHistory()">View History</button>
 
-    <!-- Error Message -->
     <div id="errorMessage" class="error-message"></div>
 </div>
 
-<!-- Total Modal -->
 <div id="totalModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeTotal()">×</span>
@@ -167,7 +163,6 @@
     </div>
 </div>
 
-<!-- History Modal -->
 <div id="historyModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeHistory()">×</span>
@@ -190,48 +185,40 @@
 </div>
 
 <script>
-// Load history on page load
 window.onload = function() {
     loadHistory();
 }
 
-// Block invalid keys in number inputs (block e, E, +, -)
 function blockInvalidKeys(event) {
     if (["e", "E", "+", "-"].includes(event.key)) {
         event.preventDefault();
     }
 }
 
-// Remove decimals from quantity
 function removeDecimals(input) {
     if (input.value.includes(".")) {
         input.value = input.value.split(".")[0];
     }
 }
 
-// Show error message
 function showError(message) {
     document.getElementById("errorMessage").innerText = message;
 }
 
-// Clear error message
 function clearError() {
     document.getElementById("errorMessage").innerText = "";
 }
 
-// Calculate total and show modal
 function calculate() {
     let name = document.getElementById("productName");
     let qty = document.getElementById("quantity");
     let price = document.getElementById("price");
 
-    // Reset error styles
     name.classList.remove("error");
     qty.classList.remove("error");
     price.classList.remove("error");
     clearError();
 
-    // Validation
     if (name.value.trim() === "") {
         name.classList.add("error");
         showError("Please enter a product name.");
@@ -248,23 +235,18 @@ function calculate() {
         return;
     }
 
-    // Compute total
     let total = qty.value * price.value;
 
-    // Show total only
     document.getElementById("totalText").innerText = "Php " + total.toFixed(2);
     document.getElementById("totalModal").style.display = "block";
 
-    // Save to history
     addToHistory(name.value, qty.value, price.value, total);
 
-    // Clear inputs
     name.value = "";
     qty.value = "";
     price.value = "";
 }
 
-// Add row to history table and save
 function addToHistory(name, qty, price, total) {
     let tableBody = document.querySelector("#historyTable tbody");
 
@@ -281,7 +263,6 @@ function addToHistory(name, qty, price, total) {
     saveHistory();
 }
 
-// Save history to localStorage
 function saveHistory() {
     let tableBody = document.querySelector("#historyTable tbody");
     let history = [];
@@ -299,7 +280,6 @@ function saveHistory() {
     localStorage.setItem("history", JSON.stringify(history));
 }
 
-// Load history from localStorage
 function loadHistory() {
     let history = localStorage.getItem("history");
     if (!history) return;
@@ -316,31 +296,6 @@ function loadHistory() {
     });
 }
 
-// Open/close modals
-function openHistory() {
-    document.getElementById("historyModal").style.display = "block";
-}
-function closeHistory() {
-    document.getElementById("historyModal").style.display = "none";
-}
-function closeTotal() {
-    document.getElementById("totalModal").style.display = "none";
-}
-
-// View history directly from total modal
-function gotoHistory() {
-    closeTotal();
-    openHistory();
-}
-
-// Clear history
-function clearHistory() {
-    document.querySelector("#historyTable tbody").innerHTML =
-        "<tr><td colspan='4'>No calculations yet.</td></tr>";
-    localStorage.removeItem("history");
-}
-
-// Show/Hide modals
 function openHistory() {
     document.getElementById("historyModal").style.display = "block";
 }
@@ -354,15 +309,12 @@ function gotoHistory() {
     closeTotal();
     openHistory();
 }
-
-// Clear history
 function clearHistory() {
     document.querySelector("#historyTable tbody").innerHTML =
         "<tr><td colspan='4'>No calculations yet.</td></tr>";
     localStorage.removeItem("history");
 }
 
-// Close when clicking outside the modal box
 window.addEventListener("click", function(event) {
     let totalModal = document.getElementById("totalModal");
     let historyModal = document.getElementById("historyModal");
@@ -375,7 +327,6 @@ window.addEventListener("click", function(event) {
     }
 });
 
-// Close when pressing ESC key
 window.addEventListener("keydown", function(event) {
     if (event.key === "Escape") {
         closeTotal();
@@ -386,6 +337,3 @@ window.addEventListener("keydown", function(event) {
 
 </body>
 </html>
-
-
-
